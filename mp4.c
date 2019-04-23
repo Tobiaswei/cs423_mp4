@@ -7,8 +7,8 @@
 #include <linux/cred.h>
 #include <linux/dcache.h>
 #include <linux/binfmts.h>
+#include <linux/string.h>
 #include "mp4_given.h"
-
 /**
  * get_inode_sid - Get the inode mp4 security label id
  *
@@ -18,27 +18,60 @@
  *
  */
 static int get_inode_sid(struct inode *inode)
-{
-	/*
-	 * Add your code here
-	 * ...
-	 */
-	return 0;
+{ 
+       //  int sid;
+
+        struct dentry *dentry;
+#define INITCONTEXTLEN 255
+        char *context = NULL;
+        unsigned len = 0;
+        int rc = 0;
+        dentry = d_find_alias(inode);
+        if(!dentry){
+         printk("Cannot find the dentry of correspodant inode\n");
+         return -1;
+       }
+        len = INITCONTEXTLEN;
+         context = kmalloc(len+1, GFP_NOFS);
+         if (!context) {
+         rc = -ENOMEM;
+         dput(dentry);
+           // goto out_unlock;
+                }
+
+       context[len]='\0';
+       rc=inode->i_op->getxattr(dentry,XATTR_NAME_MP4,context,len);
+       dput(dentry);
+       return  __cred_ctx_to_sid(context);      
 }
 
 /**
- * mp4_bprm_set_creds - Set the credentials for a new task
+ NITCONTEXTLEN;
+                context = kmalloc(len+1, GFP_NOFS);
+                if (!context) {
+                        rc = -ENOMEM;
+                        dput(dentry);
+                        goto out_unlock;
+                }* mp4_bprm_set_creds - Set the credentials for a new task
  *
  * @bprm: The linux binary preparation structure
  *
  * returns 0 on success.
- */
+ *
+**/
 static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 {
 	/*
 	 * Add your code here
 	 * ...
 	 */
+    struct inode *inode = file_inode(bprm->file);
+    int sid= get_inode_sid(inode);
+    if(sid==MP4_TARGET_SID){
+
+     bprm->cred->security->mp4_flags=MP4_TARGET_SID;
+  }
+
 	return 0;
 }
 
@@ -55,7 +88,15 @@ static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
 	 * Add your code here
 	 * ...
 	 */
-	return 0;
+     //   struct task_security_struct *tsec;
+        struct mp4_security * tsec;
+        tsec = kzalloc(sizeof(struct mp4_security), gfp);
+        if (!tsec)
+                return -ENOMEM;
+
+        tsec->mp4_flags=MP4_NO_ACCESS;
+        cred->security = tsec;
+        return 0;
 }
 
 
@@ -67,6 +108,15 @@ static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
  */
 static void mp4_cred_free(struct cred *cred)
 {
+        struct mp4_security  *tsec = cred->security;
+
+        /*
+         * cred->security == NULL if security_cred_alloc_blank() or
+         * security_prepare_creds() returned an error.
+         */
+        BUG_ON(cred->security && (unsigned long) cred->security < PAGE_SIZE);
+        cred->security = (void *) 0x7UL;
+        kfree(tsec);
 	/*
 	 * Add your code here
 	 * ...
@@ -83,8 +133,17 @@ static void mp4_cred_free(struct cred *cred)
  */
 static int mp4_cred_prepare(struct cred *new, const struct cred *old,
 			    gfp_t gfp)
-{
-	return 0;
+ {      const struct mp4_security *old_tsec;
+        struct mp4_security  *tsec;
+
+        old_tsec = old->security;
+
+        tsec = kmemdup(old_tsec, sizeof(struct mp4_security), gfp);
+        if (!tsec)
+                return -ENOMEM;
+
+        new->security = tsec;
+        return 0;
 }
 
 /**
@@ -108,6 +167,22 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 	 * Add your code here
 	 * ...
 	 */
+    struct mp4_security* tsec=current_security();
+   
+    if(tsec->mp4_flags==MP4_TARGET_SID){
+
+        if (name)
+                *name = XATTR_NAME_MP4;
+
+        if (value && len) {
+
+                string s="read-write";
+                size_t clen=strlen(s);
+
+                *value = s;
+                *len = clen;
+        }
+    }
 	return 0;
 }
 
