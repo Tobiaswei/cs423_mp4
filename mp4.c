@@ -37,7 +37,7 @@ static int get_inode_sid(struct inode *inode)
          rc = -ENOMEM;
          dput(dentry);
            // goto out_unlock;
-                }
+           }
 
        context[len]='\0';
        rc=inode->i_op->getxattr(dentry,XATTR_NAME_MP4,context,len);
@@ -186,6 +186,11 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 	return 0;
 }
 
+static int mp4_mac_policy(int ssid,int osid ,int mask){
+
+
+}
+
 /**
  * mp4_has_permission - Check if subject has permission to an object
  *
@@ -198,7 +203,10 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
  */
 static int mp4_has_permission(int ssid, int osid, int mask)
 {
-	/*
+  if(ssid==MP4_TARGET_SID){
+
+
+    }	/*
 	 * Add your code here
 	 * ...
 	 */
@@ -218,11 +226,23 @@ static int mp4_has_permission(int ssid, int osid, int mask)
  */
 static int mp4_inode_permission(struct inode *inode, int mask)
 {
-	/*
-	 * Add your code here
-	 * ...
-	 */
+     const struct cred *cred=current_cred();
+     
+     int ssid=cred->security->mp4_flags;
+
+     int osid=get_inode_sid(inode);
+
+     int rc;
+     mask &= (MAY_READ|MAY_WRITE|MAY_EXEC|MAY_APPEND);
+     if(mask==0)
+           return 0;
+
+     rc= mp4_has_permission(ssid,osid,mask);
+     
+     if(rc==0)
 	return 0;
+     else  
+        return -EACCES;
 }
 
 
