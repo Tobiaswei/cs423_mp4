@@ -69,11 +69,13 @@ static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 	 * Add your code here
 	 * ...
 	 */
+    struct mp4_security * tsec;
     struct inode *inode = file_inode(bprm->file);
     int sid= get_inode_sid(inode);
     if(sid==MP4_TARGET_SID){
 
-     bprm->cred->security->mp4_flags=MP4_TARGET_SID;
+       tsec=  bprm->cred->security;
+       tsec->mp4_flags=MP4_TARGET_SID;
   }
 
 	return 0;
@@ -118,7 +120,7 @@ static void mp4_cred_free(struct cred *cred)
          * cred->security == NULL if security_cred_alloc_blank() or
          * security_prepare_creds() returned an error.
          */
-        BUG_ON(cred->security && (unsigned long) cred->security < PAGE_SIZE);
+//        BUG_ON(cred->security && (unsigned long) cred->security < PAGE_SIZE);
         cred->security = (void *) 0x7UL;
         kfree(tsec);
 	/*
@@ -180,7 +182,7 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 
         if (value && len) {
 
-                string s="read-write";
+                char *s="read-write";
                 size_t clen=strlen(s);
 
                 *value = s;
@@ -201,7 +203,7 @@ static int mp4_mac_policy(int ssid,int osid ,int mask){
           
        if(osid==MP4_READ_OBJ) {
 
-             if(mask==MAY_REDA) return 0;
+             if(mask==MAY_READ) return 0;
             
               else return -EACCES;
       }
@@ -240,14 +242,15 @@ static int mp4_mac_policy(int ssid,int osid ,int mask){
        if(osid==MP4_READ_DIR && ssid==MP4_TARGET_SID){
             
                if(mask| MAY_EXEC | MAY_READ | MAY_ACCESS==MAY_ACCESS| MAY_EXEC| MAY_READ) return 0;
-                else return -EACCES
+                else return -EACCES;
        }
 
-       if(oisd==MP4_RW_DIR  && ssid ==MP4_TARGET_SID){
+       if(osid==MP4_RW_DIR  && ssid ==MP4_TARGET_SID){
                
                 return 0;
        }
-     retun -EACCES;
+
+      return -EACCES;
 
 }
 
@@ -261,7 +264,7 @@ static int mp4_mac_policy(int ssid,int osid ,int mask){
  * returns 0 is access granter, -EACCES otherwise
  *
  */
-static int mp4_has_permission(int ssid, inode*  inode, int mask)
+static int mp4_has_permission(int ssid,struct  inode*  inode, int mask)
 {
   if(ssid==MP4_TARGET_SID){
         
@@ -274,7 +277,7 @@ static int mp4_has_permission(int ssid, inode*  inode, int mask)
 
   else{
 
-    if(S_ISDIR(inode)==0) return 0;
+    if(S_ISDIR(inode->i_mode)) return 0;
 
     else{
  
@@ -309,16 +312,21 @@ static int mp4_inode_permission(struct inode *inode, int mask)
      mask &= (MAY_READ|MAY_WRITE|MAY_EXEC|MAY_APPEND);
 
      const struct cred *cred=current_cred();
+
+     struct mp4_security* new_sec;
      
-     int ssid=cred->security->mp4_flags;
     
-     struct dentry* dentry , _dentry;
+     new_sec =cred->security;
+     int ssid=new_sec->mp4_flags;
+    
+     struct dentry*  dentry; 
+     struct dentry*  _dentry;
    #define BUFFLEN 255
      dentry=d_find_alias(inode);
     _dentry=d_find_alias(inode);
      //allocate memory for buff
      char * buff=NULL;
-     len = BUFFLEN;
+    int  len = BUFFLEN;
 
       buff = kmalloc(len+1, GFP_NOFS);
       int i=0;
@@ -330,7 +338,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
      dentry_path_raw(dentry, buff,len+1);
       
      dput(dentry);
-     inode * inode_arr[255];
+    struct  inode * inode_arr[255];
      int count=0;
      inode_arr[count++]=inode;
 
@@ -338,13 +346,14 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 
           struct dentry * parent=_dentry->d_parent;
            
-          inode_arr[count++]=d_parent->d_inode;
+          inode_arr[count++]=parent->d_inode;
          
           _dentry=parent;
     
      }
+    dput(_dentry);
 //skip path speed up in boot time
-      if(mp4_shouls_akip_path(buff)==1){
+      if(mp4_should_skip_path(buff)==1){
       
             count--;
             rc=0;
@@ -353,7 +362,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 
      while(count>0){
      
-    	 inode* _inode=inode_arr[count--];
+    	struct  inode* _inode=inode_arr[count--];
      //	 int osid=get_inode_sid(_inode);
      	 rc=mp4_has_permission( ssid, _inode, mask);
 
