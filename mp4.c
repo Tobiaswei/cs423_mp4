@@ -120,7 +120,7 @@ static void mp4_cred_free(struct cred *cred)
          * cred->security == NULL if security_cred_alloc_blank() or
          * security_prepare_creds() returned an error.
          */
-//        BUG_ON(cred->security && (unsigned long) cred->security < PAGE_SIZE);
+        BUG_ON(cred->security && (unsigned long) cred->security < PAGE_SIZE);
         cred->security = (void *) 0x7UL;
         kfree(tsec);
 	/*
@@ -140,11 +140,13 @@ static void mp4_cred_free(struct cred *cred)
 static int mp4_cred_prepare(struct cred *new, const struct cred *old,
 			    gfp_t gfp)
  {      const struct mp4_security *old_tsec;
-        struct mp4_security  *tsec;
+        struct mp4_security  *tsec=NULL;
 
         old_tsec = old->security;
-
-        tsec = kmemdup(old_tsec, sizeof(struct mp4_security), gfp);
+        if(old_tsec)
+           {
+		   tsec = kmemdup(old_tsec, sizeof(struct mp4_security), gfp);
+	   }
         if (!tsec)
                 return -ENOMEM;
 
