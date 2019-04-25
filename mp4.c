@@ -9,6 +9,9 @@
 #include <linux/binfmts.h>
 #include <linux/string.h>
 #include "mp4_given.h"
+
+
+#define DEBUG 1
 /**
  * get_inode_sid - Get the inode mp4 security label id
  *
@@ -17,6 +20,7 @@
  * @return the inode's security id if found.
  *
  */
+
 static int get_inode_sid(struct inode *inode)
 { 
        //  int sid;
@@ -187,7 +191,63 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 }
 
 static int mp4_mac_policy(int ssid,int osid ,int mask){
+  
+     if(osid ==MP4_NO_ACCESS){
+               
+            if(ssid == MP4_TARGET_SID) return -EACCES;
 
+            else return 0;       
+       } 
+          
+       if(osid==MP4_READ_OBJ) {
+
+             if(mask==MAY_REDA) return 0;
+            
+              else return -EACCES;
+      }
+         
+        if(osid==MP4_READ_WRITE){
+              
+              if(ssid==MP4_TARGET_SID){
+                  if(mask |  MAY_READ  | MAY_WRITE | MAY_APPEND==MAY_READ  | MAY_WRITE | MAY_APPEND) return 0;
+                   else return  -EACCES;       
+                }
+              else{
+                 if(mask==MAY_READ) return 0;
+                 else return -EACCES;
+              }
+
+        }  
+
+ 
+       if(osid==MP4_WRITE_OBJ){
+
+              if(ssid==MP4_TARGET_SID){
+                   if(mask |  MAY_WRITE | MAY_APPEND==  MAY_WRITE | MAY_APPEND) return 0;
+                   else return -EACCES; 
+                   }
+              else{
+                   if(mask==MAY_READ) return 0;
+                   else return -EACCES;
+               }
+       }
+
+       if(osid==MP4_EXEC_OBJ){
+         
+               if(mask| MAY_EXEC | MAY_READ == MAY_EXEC| MAY_READ) return 0;
+               else return -EACCES;
+       }
+       if(osid==MP4_READ_DIR && ssid==MP4_TARGET_SID){
+            
+               if(mask| MAY_EXEC | MAY_READ | MAY_ACCESS==MAY_ACCESS| MAY_EXEC| MAY_READ) return 0;
+                else return -EACCES
+       }
+
+       if(oisd==MP4_RW_DIR  && ssid ==MP4_TARGET_SID){
+               
+                return 0;
+       }
+     retun -EACCES;
 
 }
 
@@ -201,15 +261,33 @@ static int mp4_mac_policy(int ssid,int osid ,int mask){
  * returns 0 is access granter, -EACCES otherwise
  *
  */
-static int mp4_has_permission(int ssid, int osid, int mask)
+static int mp4_has_permission(int ssid, inode*  inode, int mask)
 {
   if(ssid==MP4_TARGET_SID){
+        
+        int osid= get_inode_sid(inode);
+  
+         if(mp4_mac_policy(ssid,osid,mask)==0) return 0;
+            
+          else return -EACCES;
+    }
 
+  else{
 
-    }	/*
-	 * Add your code here
-	 * ...
-	 */
+    if(S_ISDIR(inode)==0) return 0;
+
+    else{
+ 
+        int osid= get_inode_sid(inode);
+
+         if(mp4_mac_policy(ssid,osid,mask)==0) return 0;
+      
+         else return -EACCES;
+    }
+
+ 
+  }	
+
 	return 0;
 }
 
@@ -226,24 +304,74 @@ static int mp4_has_permission(int ssid, int osid, int mask)
  */
 static int mp4_inode_permission(struct inode *inode, int mask)
 {
+     int rc;
+ 
+     mask &= (MAY_READ|MAY_WRITE|MAY_EXEC|MAY_APPEND);
+
      const struct cred *cred=current_cred();
      
      int ssid=cred->security->mp4_flags;
+    
+     struct dentry* dentry , _dentry;
+   #define BUFFLEN 255
+     dentry=d_find_alias(inode);
+    _dentry=d_find_alias(inode);
+     //allocate memory for buff
+     char * buff=NULL;
+     len = BUFFLEN;
 
-     int osid=get_inode_sid(inode);
+      buff = kmalloc(len+1, GFP_NOFS);
+      int i=0;
+      for(i=0;i<len+1;i++){
 
-     int rc;
-     mask &= (MAY_READ|MAY_WRITE|MAY_EXEC|MAY_APPEND);
-     if(mask==0)
-           return 0;
+         buff[i]='\0';
+      }
+    
+     dentry_path_raw(dentry, buff,len+1);
+      
+     dput(dentry);
+     inode * inode_arr[255];
+     int count=0;
+     inode_arr[count++]=inode;
 
-     rc= mp4_has_permission(ssid,osid,mask);
+     while(!IS_ROOT(_dentry)){
+
+          struct dentry * parent=_dentry->d_parent;
+           
+          inode_arr[count++]=d_parent->d_inode;
+         
+          _dentry=parent;
+    
+     }
+//skip path speed up in boot time
+      if(mp4_shouls_akip_path(buff)==1){
+      
+            count--;
+            rc=0;
+            if(DEBUG) printk("Skip function\n");
+    }
+
+     while(count>0){
      
-     if(rc==0)
-	return 0;
-     else  
-        return -EACCES;
-}
+    	 inode* _inode=inode_arr[count--];
+     //	 int osid=get_inode_sid(_inode);
+     	 rc=mp4_has_permission( ssid, _inode, mask);
+
+     if (rc!=0){
+         
+          if(DEBUG && printk_ratelimit()) printk("Grant Access successfully\n");
+           return -EACCES;
+      }
+     
+   }
+      if(rc==0)  {
+          
+          if(DEBUG && printk_ratelimit()) printk("Grant Access successfully\n");
+          return 0;
+     
+      }
+
+ }
 
 
 /*
