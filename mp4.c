@@ -72,10 +72,17 @@ static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 	 * Add your code here
 	 * ...
 	 */
-    struct mp4_security * tsec;
-    struct inode *inode = file_inode(bprm->file);
-    int sid= get_inode_sid(inode);
-    if(sid==MP4_TARGET_SID){
+   struct mp4_security * tsec;
+   struct inode *inode = file_inode(bprm->file);
+   int sid= get_inode_sid(inode);
+  
+   if(sid==-ENODATA){
+
+     return sid;
+
+   }
+    
+   else if(sid==MP4_TARGET_SID){
 
        tsec=bprm->cred->security;
        tsec->mp4_flags=MP4_TARGET_SID;
@@ -179,12 +186,17 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 	 * ...
 	 */
     struct mp4_security* tsec=current_security();
-   
-    if(tsec->mp4_flags==MP4_TARGET_SID){
+    if(tsec->mp4_flags!=MP4_TARGET_SID){
+        return -EOPNOTSUPP;
+      }   
+   else if(tsec->mp4_flags==MP4_TARGET_SID){
 
-        if (name)
+        if (name){
+
                 *name = XATTR_NAME_MP4;
+        }
 
+       else return -ENOMEM;      
         if (value && len) {
 
                 char *s="read-write";
@@ -193,6 +205,7 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
                 *value = s;
                 *len = clen;
         }
+     else return -ENOMEM;
     }
 	return 0;
 }
