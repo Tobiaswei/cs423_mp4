@@ -109,7 +109,10 @@ static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
                 return -ENOMEM;
 
         tsec->mp4_flags=MP4_NO_ACCESS;
-        cred->security = tsec;
+
+        if(!cred) 
+                return -EINVAL;
+                
         return 0;
 }
 
@@ -122,6 +125,7 @@ static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
  */
 static void mp4_cred_free(struct cred *cred)
 {
+        if(!cred) return -EINVAL;
         struct mp4_security  *tsec = cred->security;
 
         /*
