@@ -46,7 +46,10 @@ static int get_inode_sid(struct inode *inode)
        context[len]='\0';
        rc=inode->i_op->getxattr(dentry,XATTR_NAME_MP4,context,len);
        dput(dentry);
-       return  __cred_ctx_to_sid(context);      
+
+       if (rc== -ENODATA) return -ENODATA;
+
+       else return  __cred_ctx_to_sid(context);      
 }
 
 /**
@@ -74,11 +77,11 @@ static int mp4_bprm_set_creds(struct linux_binprm *bprm)
     int sid= get_inode_sid(inode);
     if(sid==MP4_TARGET_SID){
 
-       tsec=  bprm->cred->security;
+       tsec=bprm->cred->security;
        tsec->mp4_flags=MP4_TARGET_SID;
   }
 
-	return 0;
+   return 0;
 }
 
 /**
@@ -309,6 +312,7 @@ static int mp4_has_permission(int ssid,struct  inode*  inode, int mask)
  */
 static int mp4_inode_permission(struct inode *inode, int mask)
 {
+/*
      int rc;
  
      mask &= (MAY_READ|MAY_WRITE|MAY_EXEC|MAY_APPEND);
@@ -381,7 +385,8 @@ static int mp4_inode_permission(struct inode *inode, int mask)
           return 0;
      
       }
-
+*/
+return 0;
  }
 
 
