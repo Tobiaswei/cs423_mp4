@@ -69,9 +69,7 @@ static int get_inode_sid(struct inode *inode)
 static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 {
 	/*
-	 * Add your code here
-	 * ...
-	 */
+	 	 
    struct mp4_security * tsec;
    struct inode *inode = file_inode(bprm->file);
    int sid= get_inode_sid(inode);
@@ -87,7 +85,7 @@ static int mp4_bprm_set_creds(struct linux_binprm *bprm)
        tsec=bprm->cred->security;
        tsec->mp4_flags=MP4_TARGET_SID;
   }
-
+*/
    return 0;
 }
 
@@ -182,9 +180,6 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 				   const char **name, void **value, size_t *len)
 {
 	/*
-	 * Add your code here
-	 * ...
-	 */
     struct mp4_security* tsec=current_security();
     if(tsec->mp4_flags!=MP4_TARGET_SID){
         return -EOPNOTSUPP;
@@ -207,6 +202,7 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
         }
      else return -ENOMEM;
     }
+*/
 	return 0;
 }
 
