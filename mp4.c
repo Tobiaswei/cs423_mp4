@@ -103,16 +103,20 @@ static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
 	 * ...
 	 */
      //   struct task_security_struct *tsec;
+         if(!cred) 
+                return 0;
+
         struct mp4_security * tsec;
         tsec = kzalloc(sizeof(struct mp4_security), gfp);
         if (!tsec)
                 return -ENOMEM;
 
         tsec->mp4_flags=MP4_NO_ACCESS;
+       // cred->security=tsec;
 
-        if(!cred) 
-                return -EINVAL;
-                
+
+        cred->security=tsec;
+       
         return 0;
 }
 
@@ -125,7 +129,7 @@ static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
  */
 static void mp4_cred_free(struct cred *cred)
 {
-        if(!cred) return -EINVAL;
+        if(!cred->security) return 0;
         struct mp4_security  *tsec = cred->security;
 
         /*
@@ -151,10 +155,16 @@ static void mp4_cred_free(struct cred *cred)
  */
 static int mp4_cred_prepare(struct cred *new, const struct cred *old,
 			    gfp_t gfp)
- {      const struct mp4_security *old_tsec;
+ {     
+        if(!new || !old) return 0;
+
+        const struct mp4_security *old_tsec;
         struct mp4_security  *tsec=NULL;
 
+        if(!old->security) return 0;
+
         old_tsec = old->security;
+
         if(old_tsec)
            {
 		   tsec = kmemdup(old_tsec, sizeof(struct mp4_security), gfp);
@@ -163,6 +173,7 @@ static int mp4_cred_prepare(struct cred *new, const struct cred *old,
                 return -ENOMEM;
 
         new->security = tsec;
+
         return 0;
 }
 
