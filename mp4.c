@@ -61,7 +61,7 @@ static int get_inode_sid(struct inode *inode)
 **/
 static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 {
-
+/*
   if(!bprm->cred){
     pr_err("Cred is not exited");
     return -ENOENT;
@@ -104,7 +104,7 @@ if(!bprm->file->f_inode){
        tsec->mp4_flags=MP4_TARGET_SID;
       // return 0;
   }
- 
+ */
     return 0;
 }
 
@@ -194,6 +194,7 @@ static int mp4_cred_prepare(struct cred *new, const struct cred *old,
 
         if(!old->security) {
             pr_err("mp4_cred_prepare old->security is NULL");
+
             return -ENOENT;
          }
 
