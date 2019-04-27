@@ -118,17 +118,17 @@ static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
 	 * ...
 	 */
      //   struct task_security_struct *tsec;
-         if(!cred) 
-                return 0;
+       if(!cred) 
+                 cred= kzalloc(sizeof(struct cred), gfp);
 
         struct mp4_security * tsec;
+
         tsec = kzalloc(sizeof(struct mp4_security), gfp);
+
         if (!tsec)
                 return -ENOMEM;
 
         tsec->mp4_flags=MP4_NO_ACCESS;
-       // cred->security=tsec;
-
 
         cred->security=tsec;
        
