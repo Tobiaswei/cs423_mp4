@@ -93,15 +93,19 @@ if(!bprm->file->f_inode){
    struct inode *inode = bprm->file->f_inode;
    int sid= get_inode_sid(inode);
     
-   if(sid==MP4_TARGET_SID){
-        
-      // if(!bprm->cred->security) return 0;
 
+   if(sid!=MP4_TARGET_SID){
+       pr_err("set unsuccessful ");
+       return sid;
+    }
+   else {
+        
        tsec=bprm->cred->security;
        tsec->mp4_flags=MP4_TARGET_SID;
+      // return 0;
   }
-
-   return 0;
+ 
+    return 0;
 }
 
 /**
@@ -118,8 +122,11 @@ static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
 	 * ...
 	 */
      //   struct task_security_struct *tsec;
-       if(!cred) 
-                 cred= kzalloc(sizeof(struct cred), gfp);
+       if(!cred){
+
+               pr_err("No credential in allocate  blank");
+               return -ENOENT;
+       }          
 
         struct mp4_security * tsec;
 
@@ -144,7 +151,11 @@ static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
  */
 static void mp4_cred_free(struct cred *cred)
 {
-        if(!cred->security) return 0;
+        if(!cred->security){
+           pr_err("mp4_cred_free no cred passed into");
+           return -ENOENT;
+ 
+      }
         struct mp4_security  *tsec = cred->security;
 
         /*
@@ -171,12 +182,20 @@ static void mp4_cred_free(struct cred *cred)
 static int mp4_cred_prepare(struct cred *new, const struct cred *old,
 			    gfp_t gfp)
  {     
-        if(!new || !old) return 0;
+        if(!new || !old){
+ 
+          pr_err("mp4_cred_prepare no new or old passed into");
+          return -ENOENT;
+       } 
 
         const struct mp4_security *old_tsec;
+
         struct mp4_security  *tsec=NULL;
 
-        if(!old->security) return 0;
+        if(!old->security) {
+            pr_err("mp4_cred_prepare old->security is NULL");
+            return -ENOENT;
+         }
 
         old_tsec = old->security;
 
