@@ -53,13 +53,6 @@ static int get_inode_sid(struct inode *inode)
 }
 
 /**
- NITCONTEXTLEN;
-                context = kmalloc(len+1, GFP_NOFS);
-                if (!context) {
-                        rc = -ENOMEM;
-                        dput(dentry);
-                        goto out_unlock;
-                }* mp4_bprm_set_creds - Set the credentials for a new task
  *
  * @bprm: The linux binary preparation structure
  *
@@ -68,24 +61,21 @@ static int get_inode_sid(struct inode *inode)
 **/
 static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 {
-	/*
+  if (bprm->called_set_creds) return 0;
+
+  if(!bprm) return 0;
 	 	 
    struct mp4_security * tsec;
+   // check bprm->file
    struct inode *inode = file_inode(bprm->file);
    int sid= get_inode_sid(inode);
-  
-   if(sid==-ENODATA){
-
-     return sid;
-
-   }
     
-   else if(sid==MP4_TARGET_SID){
+    if(sid==MP4_TARGET_SID){
 
        tsec=bprm->cred->security;
        tsec->mp4_flags=MP4_TARGET_SID;
   }
-*/
+
    return 0;
 }
 
@@ -194,8 +184,10 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 				   const struct qstr *qstr,
 				   const char **name, void **value, size_t *len)
 {
-	/*
+ /*   if(!current_security()) return 0;
+
     struct mp4_security* tsec=current_security();
+
     if(tsec->mp4_flags!=MP4_TARGET_SID){
         return -EOPNOTSUPP;
       }   
@@ -206,7 +198,8 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
                 *name = XATTR_NAME_MP4;
         }
 
-       else return -ENOMEM;      
+      else return -ENOMEM; 
+     
         if (value && len) {
 
                 char *s="read-write";
