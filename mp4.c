@@ -61,7 +61,7 @@ static int get_inode_sid(struct inode *inode)
 **/
 static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 {
-  if (bprm->called_set_creds) return 0;
+  if (bprm->cred_prepared) return 0;
 
   if(!bprm) return 0;
 	 	 
