@@ -202,12 +202,13 @@ static int mp4_cred_prepare(struct cred *new, const struct cred *old,
         else
            {
 		   tsec = kmemdup(old_tsec, sizeof(struct mp4_security), gfp);
+                   if (!tsec)
+                     return -ENOMEM;
+
+                new->security = tsec;
+
 	   }
-        if (!tsec)
-                return -ENOMEM;
-
-        new->security = tsec;
-
+        
         return 0;
 }
 
