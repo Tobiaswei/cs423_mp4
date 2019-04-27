@@ -64,7 +64,7 @@ static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 
   if(!bprm->cred){
     pr_err("Cred is not exited");
-    return -EN0ENT;
+    return -ENOENT;
    }
 
  if(!bprm->cred->security){
