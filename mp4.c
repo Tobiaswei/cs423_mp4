@@ -72,7 +72,7 @@ static int mp4_bprm_set_creds(struct linux_binprm *bprm)
     
    if(sid==MP4_TARGET_SID){
         
-       if(!brpm->cred->security) return 0;
+       if(!bprm->cred->security) return 0;
 
        tsec=bprm->cred->security;
        tsec->mp4_flags=MP4_TARGET_SID;
