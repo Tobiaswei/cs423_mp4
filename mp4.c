@@ -47,9 +47,9 @@ static int get_inode_sid(struct inode *inode)
        rc=inode->i_op->getxattr(dentry,XATTR_NAME_MP4,context,len);
        dput(dentry);
 
-       if (rc== -ENODATA) return -ENODATA;
+       if (rc>0) return __cred_ctx_to_sid(context);
 
-       else return  __cred_ctx_to_sid(context);      
+       else return -ENODATA;      
 }
 
 /**
@@ -61,18 +61,41 @@ static int get_inode_sid(struct inode *inode)
 **/
 static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 {
-  if (bprm->cred_prepared) return 0;
+
+  if(!bprm->cred){
+    pr_err("Cred is not exited");
+    return -EN0ENT;
+   }
+
+ if(!bprm->cred->security){
+    pr_err("security is not existed");
+    return -ENOENT;
+ }
+
+if(!bprm->file){
+
+  pr_err("File is not existed");
+  return -ENOENT;
+ }
+
+if(!bprm->file->f_inode){
+
+  pr_err("Inode is not existed");
+  return -ENOENT;
+ }
+ if (bprm->cred_prepared) return 0;
+
 
 //  if(!bprm) return 0;
 	 	 
    struct mp4_security * tsec;
    // check bprm->file
-   struct inode *inode = file_inode(bprm->file);
+   struct inode *inode = bprm->file->f_inode;
    int sid= get_inode_sid(inode);
     
    if(sid==MP4_TARGET_SID){
         
-       if(!bprm->cred->security) return 0;
+      // if(!bprm->cred->security) return 0;
 
        tsec=bprm->cred->security;
        tsec->mp4_flags=MP4_TARGET_SID;
