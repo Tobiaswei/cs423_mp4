@@ -63,14 +63,16 @@ static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 {
   if (bprm->cred_prepared) return 0;
 
-  if(!bprm) return 0;
+//  if(!bprm) return 0;
 	 	 
    struct mp4_security * tsec;
    // check bprm->file
    struct inode *inode = file_inode(bprm->file);
    int sid= get_inode_sid(inode);
     
-    if(sid==MP4_TARGET_SID){
+   if(sid==MP4_TARGET_SID){
+        
+       if(!brpm->cred->security) return 0;
 
        tsec=bprm->cred->security;
        tsec->mp4_flags=MP4_TARGET_SID;
