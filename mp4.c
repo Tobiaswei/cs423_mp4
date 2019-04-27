@@ -24,6 +24,7 @@
 static int get_inode_sid(struct inode *inode)
 { 
        //  int sid;
+        pr_err("Get into get_inode_sid");
 
         struct dentry *dentry;
 #define INITCONTEXTLEN 255
@@ -32,7 +33,7 @@ static int get_inode_sid(struct inode *inode)
         int rc = 0;
         dentry = d_find_alias(inode);
         if(!dentry){
-         printk("Cannot find the dentry of correspodant inode\n");
+         pr_err("Cannot find the dentry of correspodant inode");
          return -1;
        }
         len = INITCONTEXTLEN;
@@ -45,6 +46,8 @@ static int get_inode_sid(struct inode *inode)
 
        context[len]='\0';
        rc=inode->i_op->getxattr(dentry,XATTR_NAME_MP4,context,len);
+       pr_debug("The conext is %s",context);
+       pr_debug("the value of rc is %d",rc);
        dput(dentry);
 
        if (rc>0) return __cred_ctx_to_sid(context);
@@ -61,7 +64,7 @@ static int get_inode_sid(struct inode *inode)
 **/
 static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 {
-/*
+
   if(!bprm->cred){
     pr_err("Cred is not exited");
     return -ENOENT;
@@ -99,12 +102,14 @@ if(!bprm->file->f_inode){
        return sid;
     }
    else {
-        
+
+       pr_err("set targt bolb security");
+      
        tsec=bprm->cred->security;
        tsec->mp4_flags=MP4_TARGET_SID;
       // return 0;
   }
-*/
+
     return 0;
 }
 
