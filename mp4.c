@@ -539,7 +539,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
          return 0;  
      
      }
-     
+/*     
      dir= dentry_path_raw(_dentry, buff,len+1);
     
      if(printk_ratelimit())
@@ -559,7 +559,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 		dput(_dentry);
 	  return 0; //TODO: skip is granted or no access?
 	 }
-
+*/
      struct  inode * inode_arr[255];
      int count=0;
      inode_arr[count++]=inode;
@@ -617,7 +617,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
      
       }
     
-      if(printk_ratelimit()) pr_info("Grant Access successfully for the following path : %s",buff);
+   //   if(printk_ratelimit()) pr_info("Grant Access successfully for the following path : %s",buff);
      
       kfree(buff);
 
