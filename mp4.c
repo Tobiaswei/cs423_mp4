@@ -429,11 +429,14 @@ static int mp4_mac_policy(int ssid,int osid ,int mask){
  */
 static int mp4_has_permission(int ssid,struct  inode*  inode, int mask)
 {
+
+  int osid;
+ 
   if(ssid==MP4_TARGET_SID){
         
-        int osid= get_inode_sid(inode);
+          osid= get_inode_sid(inode);
   
-         if(mp4_mac_policy(ssid,osid,mask)==0) return 0;
+          if(mp4_mac_policy(ssid,osid,mask)==0) return 0;
             
           else{
                 pr_err("permission Denied ssid: %d , osid : %d mask : %d", ssid,osid, mask);
@@ -447,7 +450,7 @@ static int mp4_has_permission(int ssid,struct  inode*  inode, int mask)
 
     else{
  
-        int osid= get_inode_sid(inode);
+          osid= get_inode_sid(inode);
 
          if(mp4_mac_policy(ssid,osid,mask)==0) return 0;
       
@@ -504,9 +507,10 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 
      
      new_sec =cred->security;
+
      ssid=new_sec->mp4_flags;
     
-   #define BUFFLEN 255
+  #define BUFFLEN 255
 
     _dentry=d_find_alias(inode);
 
@@ -538,6 +542,9 @@ static int mp4_inode_permission(struct inode *inode, int mask)
      
      dir= dentry_path_raw(_dentry, buff,len+1);
     
+     if(printk_ratelimit())
+         pr_info("The directory :%s",dir);
+
      if(!dir){
         kfree(buff);
         if(_dentry)
@@ -596,7 +603,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 
      	if (rc!=0){
          
-          	if( printk_ratelimit()) pr_err("Grant Access successfully");
+          	if( printk_ratelimit()) pr_info("Grant Access successfully");
          
            	return -EACCES;
           }
@@ -605,12 +612,12 @@ static int mp4_inode_permission(struct inode *inode, int mask)
     if(rc!=0)
     {
           
-          if(printk_ratelimit()) pr_err("Grant Access unsuccessfully");
+          if(printk_ratelimit()) pr_info("Grant Access unsuccessfully");
           return -EACCES;
      
       }
     
-      if(printk_ratelimit()) pr_err("Grant Access successfully for the following path : %s",buff);
+      if(printk_ratelimit()) pr_info("Grant Access successfully for the following path : %s",buff);
      
       kfree(buff);
 
