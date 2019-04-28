@@ -435,7 +435,10 @@ static int mp4_has_permission(int ssid,struct  inode*  inode, int mask)
   
          if(mp4_mac_policy(ssid,osid,mask)==0) return 0;
             
-          else return -EACCES;
+          else{
+                pr_err("permission Denied ssid: %d , osid : %d mask : %d", ssid,osid, mask);
+                return 0;
+             }  // return  -EACCES;
     }
 
   else{
@@ -448,7 +451,12 @@ static int mp4_has_permission(int ssid,struct  inode*  inode, int mask)
 
          if(mp4_mac_policy(ssid,osid,mask)==0) return 0;
       
-         else return -EACCES;
+         else{
+
+            pr_err("permission Denied ssid :%d, osid %d mask :%d", ssid , osid , mask);
+
+            return 0;
+         }// return -EACCES;
     }
 
  
@@ -478,8 +486,6 @@ static int mp4_inode_permission(struct inode *inode, int mask)
      
      int ssid;
 
-     //struct dentry * dentry;
-
      struct dentry * _dentry;
     //Sanity check all the identities used in these function!
 
@@ -501,7 +507,6 @@ static int mp4_inode_permission(struct inode *inode, int mask)
      ssid=new_sec->mp4_flags;
     
    #define BUFFLEN 255
-     //dentry=d_find_alias(inode);
 
     _dentry=d_find_alias(inode);
 
@@ -513,36 +518,47 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 
     }     
      //allocate memory for buff
-   /*
+  
      char * buff=NULL;
-    int  len = BUFFLEN;
+     int  len = BUFFLEN;
 
-      buff = kmalloc(len+1, GFP_NOFS);
-      int i=0;
-      for(i=0;i<len+1;i++){
-
-         buff[i]='\0';
-      }
+     buff = kmalloc(len+1, GFP_NOFS);
     
-      
+     if(!buff){
+          
+         pr_err("Allocation failure for buff");
+         
+         dput(_dentry);
+        
+         return 0;  
+     
+     }
+     
      dentry_path_raw(_dentry, buff,len+1);
-     */ 
+    
      struct  inode * inode_arr[255];
      int count=0;
      inode_arr[count++]=inode;
 //The relationship between inode and dentry 
      while(!IS_ROOT(_dentry)){
  // get parent of current dentry
+          
+          struct dentry * parent;
+          if(_dentry->d_parent)
+                  parent=_dentry->d_parent;
+          else 
+              { 
+                 if(printk_ratelimit()) pr_err("cannot find parent directory for current inode");
 
-          struct dentry * parent=_dentry->d_parent;
+                 return 0;
+              }
            
-          inode_arr[count++]=_dentry->d_inode;
+          inode_arr[count++]= parent->d_inode;
          
           _dentry=parent;
-    
      }
 //skip path speed up in boot time
-/*
+
     if(mp4_should_skip_path(buff)==1){
       
             count--;
@@ -554,10 +570,10 @@ static int mp4_inode_permission(struct inode *inode, int mask)
           if(printk_ratelimit())
                     pr_err("Cannot skip the path ");
      }
-*/
-     while(count>0){
+
+    while(count>0){
      
-    	 struct  inode* _inode=inode_arr[--count];
+    	 struct inode* _inode=inode_arr[--count];
 
      	 rc=mp4_has_permission( ssid, _inode, mask);
 
@@ -576,10 +592,11 @@ static int mp4_inode_permission(struct inode *inode, int mask)
      
       }
     
-      //if(printk_ratelimit()) pr_err("Grant Access successfully for the following path : %s",buff);
+     if(printk_ratelimit()) pr_err("Grant Access successfully for the following path : %s",buff);
      
-      // kfree(buff);
-      if(_dentry)
+      kfree(buff);
+
+     if(_dentry)
           dput(_dentry);
 
       return 0;
