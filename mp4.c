@@ -413,7 +413,7 @@ static int mp4_mac_policy(int ssid,int osid ,int mask){
                 return 0;
        }
 
-      return -EACCES;
+      return 0;
 
 }
 
@@ -470,26 +470,49 @@ static int mp4_has_permission(int ssid,struct  inode*  inode, int mask)
  */
 static int mp4_inode_permission(struct inode *inode, int mask)
 {
-/*
-     int rc;
- 
-     mask &= (MAY_READ|MAY_WRITE|MAY_EXEC|MAY_APPEND);
+     int rc; 
 
      const struct cred *cred=current_cred();
 
      struct mp4_security* new_sec;
      
-    
+     int ssid;
+
+     //struct dentry * dentry;
+
+     struct dentry * _dentry;
+    //Sanity check all the identities used in these function!
+
+     if(!inode) return -EACCES;
+
+     mask &= (MAY_READ|MAY_WRITE|MAY_EXEC|MAY_APPEND);
+     
+     if(!mask) return 0;// no mask operation grant pass
+     
+     if(!cred || !cred->security){
+           
+            return -EACCES;  
+      }
+
+     
      new_sec =cred->security;
-     int ssid=new_sec->mp4_flags;
+     ssid=new_sec->mp4_flags;
     
-     struct dentry*  dentry; 
-     struct dentry*  _dentry;
    #define BUFFLEN 255
-     dentry=d_find_alias(inode);
+     //dentry=d_find_alias(inode);
+
     _dentry=d_find_alias(inode);
+
+    if( ! _dentry ){
+         
+        if(_dentry)
+             dput(_dentry);
+
+        return -EACCES;
+
+    }     
      //allocate memory for buff
-     char * buff=NULL;
+    char * buff=NULL;
     int  len = BUFFLEN;
 
       buff = kmalloc(len+1, GFP_NOFS);
@@ -499,15 +522,16 @@ static int mp4_inode_permission(struct inode *inode, int mask)
          buff[i]='\0';
       }
     
-     dentry_path_raw(dentry, buff,len+1);
+     dentry_path_raw(_dentry, buff,len+1);
       
-     dput(dentry);
-    struct  inode * inode_arr[255];
+    // dput(dentry);
+     struct  inode * inode_arr[255];
      int count=0;
      inode_arr[count++]=inode;
 
      while(!IS_ROOT(_dentry)){
 
+ // get parent of current dentry
           struct dentry * parent=_dentry->d_parent;
            
           inode_arr[count++]=parent->d_inode;
@@ -515,36 +539,43 @@ static int mp4_inode_permission(struct inode *inode, int mask)
           _dentry=parent;
     
      }
-    dput(_dentry);
+   // dput(_dentry);
 //skip path speed up in boot time
       if(mp4_should_skip_path(buff)==1){
       
             count--;
             rc=0;
-            if(DEBUG) printk("Skip function\n");
+            if(printk_ratelimit())
+                    pr_err("Skip function");
     }
 
      while(count>0){
      
-    	struct  inode* _inode=inode_arr[count--];
-     //	 int osid=get_inode_sid(_inode);
+    	 struct  inode* _inode=inode_arr[--count];
+
      	 rc=mp4_has_permission( ssid, _inode, mask);
 
-     if (rc!=0){
+     	if (rc!=0){
          
-          if(DEBUG && printk_ratelimit()) printk("Grant Access successfully\n");
-           return -EACCES;
-      }
+          	if( printk_ratelimit()) pr_err("Grant Access successfully");
+         
+           	return -EACCES;
+          }
      
    }
-      if(rc==0)  {
+    if(rc!=0)  {
           
-          if(DEBUG && printk_ratelimit()) printk("Grant Access successfully\n");
-          return 0;
+          if(printk_ratelimit()) pr_err("Grant Access unsuccessfully");
+          return -EACCES;
      
       }
-*/
-return 0;
+    
+      if(printk_ratelimit()) pr_err("Grant Access successfully for the following path : %s",buff);
+      kfree(buff);
+      if(_dentry)
+          dput(_dentry);
+
+      return 0;
  }
 
 
