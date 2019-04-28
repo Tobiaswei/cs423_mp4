@@ -35,13 +35,15 @@ static int get_inode_sid(struct inode *inode)
         dentry = d_find_alias(inode);
         if(!dentry){
          pr_err("Cannot find the dentry of correspodant inode");
-         return -1;
+         return MP4_NO_ACCESS;
        }
         len = INITCONTEXTLEN;
          context = kmalloc(len+1, GFP_NOFS);
          if (!context) {
-         rc = -ENOMEM;
-         dput(dentry);
+              if(dentry)
+                   dput(dentry);
+          
+           return MP4_NO_ACCESS;
            // goto out_unlock;
            }
 
@@ -49,16 +51,21 @@ static int get_inode_sid(struct inode *inode)
        rc=inode->i_op->getxattr(dentry,XATTR_NAME_MP4,context,len);
        pr_debug("The conext is %s",context);
        pr_debug("the value of rc is %d",rc);
-       dput(dentry);
+       if(dentry)
+            dput(dentry);
       
        if(rc<0){
 
-        kfree(context);
-        return 0;  
+           kfree(context);
+           return 0;  
      } 
       else{
        sid=__cred_ctx_to_sid(context);
        kfree(context);
+  }
+    if(printk_ratelimit()){
+
+         pr_info("mp4 : get node helper passed!");
   }
        return sid;
 
@@ -100,23 +107,23 @@ static int mp4_bprm_set_creds(struct linux_binprm *bprm)
  }
    if (bprm->cred_prepared) return 0;
 
-   struct mp4_security * tsec=bprm->cred->security;
+   struct mp4_security * tsec;
    // check bprm->file
-   struct inode *inode = bprm->file->f_inode;
+   struct inode *inode;
+   inode = bprm->file->f_inode;
    int sid= get_inode_sid(inode);
     
 
    if(sid==MP4_TARGET_SID){
       
-       pr_err("set targt bolb security as MP4_TARGET_SID");
+      // pr_err("set targt bolb security as MP4_TARGET_SID");
         
+       tsec=bprm->cred->security;
+
        tsec->mp4_flags=MP4_TARGET_SID;
     }
-   else {
-
-         pr_err("Cannot find the target xattr in corresponding bprm file");      
-  }
-
+  
+        // pr_err("Cannot find the target xattr in corresponding bprm file");      
     return 0;
 }
 
