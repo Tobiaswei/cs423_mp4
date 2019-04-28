@@ -50,13 +50,18 @@ static int get_inode_sid(struct inode *inode)
        pr_debug("The conext is %s",context);
        pr_debug("the value of rc is %d",rc);
        dput(dentry);
-       
+      
+       if(rc<0){
+
+        kfree(context);
+        return 0;  
+     } 
+      else{
        sid=__cred_ctx_to_sid(context);
        kfree(context);
-
+  }
        return sid;
 
-       //else return -ENODATA;      
 }
 
 /**
@@ -68,9 +73,13 @@ static int get_inode_sid(struct inode *inode)
 **/
 static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 {
+  if(!bprm){
+     pr_err("brpm is not existed");
+     return -ENOENT;
+   }
 
   if(!bprm->cred){
-      pr_err("Cred is not exited");
+      pr_err("Cred is not existed");
       return -ENOENT;
    }
 
