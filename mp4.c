@@ -31,6 +31,7 @@ static int get_inode_sid(struct inode *inode)
         char *context = NULL;
         unsigned len = 0;
         int rc = 0;
+        int sid;
         dentry = d_find_alias(inode);
         if(!dentry){
          pr_err("Cannot find the dentry of correspodant inode");
@@ -49,10 +50,13 @@ static int get_inode_sid(struct inode *inode)
        pr_debug("The conext is %s",context);
        pr_debug("the value of rc is %d",rc);
        dput(dentry);
+       
+       sid=__cred_ctx_to_sid(context);
+       kfree(context);
 
-       if (rc>0) return __cred_ctx_to_sid(context);
+       return sid;
 
-       else return -ENODATA;      
+       //else return -ENODATA;      
 }
 
 /**
@@ -87,23 +91,21 @@ static int mp4_bprm_set_creds(struct linux_binprm *bprm)
  }
    if (bprm->cred_prepared) return 0;
 
-   struct mp4_security * tsec;
+   struct mp4_security * tsec=bprm->cred->security;
    // check bprm->file
    struct inode *inode = bprm->file->f_inode;
    int sid= get_inode_sid(inode);
     
 
-   if(sid!=MP4_TARGET_SID){
-       pr_err("set unsuccessful ");
-      // return sid;
+   if(sid==MP4_TARGET_SID){
+      
+       pr_err("set targt bolb security as MP4_TARGET_SID");
+        
+       tsec->mp4_flags=MP4_TARGET_SID;
     }
    else {
 
-       pr_err("set targt bolb security");
-      
-       tsec=bprm->cred->security;
-       tsec->mp4_flags=MP4_TARGET_SID;
-      // return 0;
+         pr_err("Cannot find the target xattr in corresponding bprm file");      
   }
 
     return 0;
