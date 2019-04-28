@@ -374,7 +374,7 @@ static int mp4_mac_policy(int ssid,int osid ,int mask){
         if(osid==MP4_READ_WRITE){
               
               if(ssid==MP4_TARGET_SID){
-                  if(mask |  MAY_READ  | MAY_WRITE | MAY_APPEND==MAY_READ  | MAY_WRITE | MAY_APPEND) return 0;
+                  if((mask |  MAY_READ  | MAY_WRITE | MAY_APPEND)==(MAY_READ  | MAY_WRITE | MAY_APPEND)) return 0;
                    else return  -EACCES;       
                 }
               else{
@@ -388,7 +388,7 @@ static int mp4_mac_policy(int ssid,int osid ,int mask){
        if(osid==MP4_WRITE_OBJ){
 
               if(ssid==MP4_TARGET_SID){
-                   if(mask |  MAY_WRITE | MAY_APPEND==  MAY_WRITE | MAY_APPEND) return 0;
+                   if((mask |  MAY_WRITE | MAY_APPEND)== ( MAY_WRITE | MAY_APPEND)) return 0;
                    else return -EACCES; 
                    }
               else{
@@ -399,7 +399,7 @@ static int mp4_mac_policy(int ssid,int osid ,int mask){
 
        if(osid==MP4_EXEC_OBJ){
          
-               if(mask| MAY_EXEC | MAY_READ == MAY_EXEC| MAY_READ) return 0;
+               if((mask| MAY_EXEC | MAY_READ) == (MAY_EXEC| MAY_READ)) return 0;
                else return -EACCES;
        }
        if(osid==MP4_READ_DIR && ssid==MP4_TARGET_SID){
@@ -512,7 +512,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 
     if(!_dentry ){
          
-         dput(_dentry);
+         //dput(_dentry);
 
         return -EACCES;
 
@@ -521,6 +521,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
   
      char * buff=NULL;
      int  len = BUFFLEN;
+     char * dir;
 
      buff = kmalloc(len+1, GFP_NOFS);
     
@@ -528,14 +529,30 @@ static int mp4_inode_permission(struct inode *inode, int mask)
           
          pr_err("Allocation failure for buff");
          
-         dput(_dentry);
+         if(_dentry)
+             dput(_dentry);
         
          return 0;  
      
      }
      
-     dentry_path_raw(_dentry, buff,len+1);
+     dir= dentry_path_raw(_dentry, buff,len+1);
     
+     if(!dir){
+        kfree(buff);
+        if(_dentry)
+            dput(_dentry);
+      return -EACCES;
+
+      }
+     if (mp4_should_skip_path(dir)) {
+
+	  kfree(buff);
+	  if(_dentry)
+		dput(_dentry);
+	  return 0; //TODO: skip is granted or no access?
+	 }
+
      struct  inode * inode_arr[255];
      int count=0;
      inode_arr[count++]=inode;
@@ -558,7 +575,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
           _dentry=parent;
      }
 //skip path speed up in boot time
-
+/*
     if(mp4_should_skip_path(buff)==1){
       
             count--;
@@ -570,7 +587,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
           if(printk_ratelimit())
                     pr_err("Cannot skip the path ");
      }
-
+*/
     while(count>0){
      
     	 struct inode* _inode=inode_arr[--count];
@@ -585,14 +602,15 @@ static int mp4_inode_permission(struct inode *inode, int mask)
           }
      
    }
-    if(rc!=0)  {
+    if(rc!=0)
+    {
           
           if(printk_ratelimit()) pr_err("Grant Access unsuccessfully");
           return -EACCES;
      
       }
     
-     if(printk_ratelimit()) pr_err("Grant Access successfully for the following path : %s",buff);
+      if(printk_ratelimit()) pr_err("Grant Access successfully for the following path : %s",buff);
      
       kfree(buff);
 
