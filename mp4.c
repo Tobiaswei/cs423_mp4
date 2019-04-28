@@ -323,22 +323,24 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 				   const struct qstr *qstr,
 				   const char **name, void **value, size_t *len)
 {
- /*   if(!current_security()) return 0;
+    if(!current_security()) return -EOPNOTSUPP;
+    
+    if(!inode||!dir) return -EOPNOTSUPP;
 
     struct mp4_security* tsec=current_security();
-
-    if(tsec->mp4_flags!=MP4_TARGET_SID){
-        return -EOPNOTSUPP;
-      }   
-   else if(tsec->mp4_flags==MP4_TARGET_SID){
-
-        if (name){
+    if (name){
 
                 *name = XATTR_NAME_MP4;
         }
 
       else return -ENOMEM; 
-     
+
+    if(tsec->mp4_flags!=MP4_TARGET_SID){
+        return -EOPNOTSUPP;
+      }   
+   else {
+
+             
         if (value && len) {
 
                 char *s="read-write";
@@ -347,9 +349,9 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
                 *value = s;
                 *len = clen;
         }
-     else return -ENOMEM;
+        else return -ENOMEM;
     }
-*/
+
 	return 0;
 }
 
