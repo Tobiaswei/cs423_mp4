@@ -24,7 +24,7 @@
 static int get_inode_sid(struct inode *inode)
 { 
        //  int sid;
-        pr_err("Get into get_inode_sid");
+     /*   pr_err("Get into get_inode_sid");
 
         struct dentry *dentry;
 #define INITCONTEXTLEN 255
@@ -68,6 +68,81 @@ static int get_inode_sid(struct inode *inode)
          pr_info("mp4 : get node helper passed!");
   }
        return sid;
+*/
+
+	struct dentry *dentry;
+	int size;
+	int ret;
+	char *cred_ctx;
+	int sid;
+
+	//error handling for inode
+	if (!inode || !inode->i_op || !inode->i_op->getxattr) {
+		return MP4_NO_ACCESS;
+	}
+
+	//get dentry of inode
+	dentry = d_find_alias(inode);
+
+	//error handling dentry
+	if (!dentry) {
+		return MP4_NO_ACCESS;
+	}
+
+	size = 128;
+	cred_ctx = kmalloc(size, GFP_KERNEL);
+	if(!cred_ctx) {
+		if(dentry)
+			dput(dentry);
+		return MP4_NO_ACCESS;
+	}
+
+	//first time get xattr and error handling
+	ret = inode->i_op->getxattr(dentry, XATTR_MP4_SUFFIX, cred_ctx, size);
+	size = ret;
+
+	if(ret == -ERANGE) {
+		//buffer overflows, should query the correct buffer size
+		kfree(cred_ctx);
+		ret = inode->i_op->getxattr(dentry, XATTR_MP4_SUFFIX, NULL, 0);
+		//queried size even < 0, error, terminate.
+		if(ret < 0) {
+			if(dentry)
+				dput(dentry);
+			return MP4_NO_ACCESS;
+		}
+
+		//update the size by the newly queried correct size
+		size = ret;
+		cred_ctx = kmalloc(size, GFP_KERNEL);
+		if(!cred_ctx) {
+			if(dentry)
+				dput(dentry);
+			return -ENOMEM;
+		}
+		//second time get xattr and error handling
+		ret = inode->i_op->getxattr(dentry, XATTR_MP4_SUFFIX, cred_ctx, size);
+	}
+
+	if(dentry)
+		dput(dentry);
+
+	if(ret < 0) {
+		kfree(cred_ctx);
+		return MP4_NO_ACCESS;
+	} else {
+		cred_ctx[size] = '\0';
+		sid = __cred_ctx_to_sid(cred_ctx);
+		kfree(cred_ctx);
+	}
+
+	if(printk_ratelimit()) {
+		pr_info("mp4: get node sid helper passed!");
+	}
+
+	return sid;
+
+
 
 }
 
