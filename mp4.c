@@ -525,7 +525,8 @@ static int mp4_inode_permission(struct inode *inode, int mask)
    int osid;
 
    osid= get_inode_sid(inode);
-
+   
+   if(strcmp(dir,"/home/yuguang2/file1.txt")==0) pr_err("file 1 osid : %d and sid :%d",osid,ssid);
    if(ssid==MP4_TARGET_SID){
         
           if(mp4_has_permission(ssid,osid,mask)==0) rc=0;
