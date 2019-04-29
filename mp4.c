@@ -355,8 +355,18 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 	return 0;
 }
 
-static int mp4_mac_policy(int ssid,int osid ,int mask){
-  
+/**
+ * mp4_has_permission - Check if subject has permission to an object
+ *
+ * @ssid: the subject's security id
+ * @osid: the object's security id
+ * @mask: the operation mask
+ *
+ * returns 0 is access granter, -EACCES otherwise
+ *
+ */
+static int mp4_has_permission(int ssid, int  osid , int mask)
+{
      if(osid ==MP4_NO_ACCESS){
                
             if(ssid == MP4_TARGET_SID) return -EACCES;
@@ -414,58 +424,7 @@ static int mp4_mac_policy(int ssid,int osid ,int mask){
        }
 
       return 0;
-
-}
-
-/**
- * mp4_has_permission - Check if subject has permission to an object
- *
- * @ssid: the subject's security id
- * @osid: the object's security id
- * @mask: the operation mask
- *
- * returns 0 is access granter, -EACCES otherwise
- *
- */
-static int mp4_has_permission(int ssid,struct  inode*  inode, int mask)
-{
-
-  int osid;
- 
-  if(ssid==MP4_TARGET_SID){
-        
-          osid= get_inode_sid(inode);
   
-          if(mp4_mac_policy(ssid,osid,mask)==0) return 0;
-            
-          else{
-                pr_err("permission Denied ssid: %d , osid : %d mask : %d", ssid,osid, mask);
-                return 0;
-             }  // return  -EACCES;
-    }
-
-  else{
-
-    if(S_ISDIR(inode->i_mode)) return 0;
-
-    else{
- 
-          osid= get_inode_sid(inode);
-
-         if(mp4_mac_policy(ssid,osid,mask)==0) return 0;
-      
-         else{
-
-            pr_err("permission Denied ssid :%d, osid %d mask :%d", ssid , osid , mask);
-
-            return 0;
-         }// return -EACCES;
-    }
-
- 
-  }	
-
-	return 0;
 }
 
 /**
@@ -557,77 +516,54 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 	  if(_dentry)
 		dput(_dentry);
 	  return 0; 
-	 }
+    }
+ 
+   int osid;
 
-     struct  inode * inode_arr[255];
-     int count=0;
-    // inode_arr[count++]=inode;
-//The relationship between inode and dentry 
+   osid= get_inode_sid(inode);
 
+   if(ssid==MP4_TARGET_SID){
+        
+          if(mp4_has_permission(ssid,osid,mask)==0) rc=0;
+            
+          else{
+                pr_err("permission Denied ssid: %d , osid : %d mask : %d", ssid,osid, mask);
+                rc =-EACCES;
+             }  // return  -EACCES;
+    }
 
-     while(!IS_ROOT(_dentry)){
- // get parent of current dentry
-          
-          struct dentry * parent;
-          if(_dentry->d_parent)
-                  parent=_dentry->d_parent;
-          else 
-              { 
-                 if(printk_ratelimit()) pr_err("cannot find parent directory for current inode");
+  else{
 
-                 return 0;
-              }
-           
-          inode_arr[count++]= _dentry->d_inode;
-         
-          _dentry=parent;
-     }
+    if(S_ISDIR(inode->i_mode)) rc=0;
 
-//skip path speed up in boot time
-/*
-    if(mp4_should_skip_path(buff)==1){
+    else{
+ 
+
+         if(mp4_has_permission(ssid,osid,mask)==0) rc= 0;
       
-            count--;
-            rc=0;
-            if(printk_ratelimit())
-                    pr_err("Skip the path");
-    }else{
-          rc=-1;
-          if(printk_ratelimit())
-                    pr_err("Cannot skip the path ");
-     }
-*/
-    while(count>0){
-     
-    	 struct inode* _inode=inode_arr[--count];
+         else{
 
-     	 //rc=mp4_has_permission( ssid, _inode, mask);
-         rc=0;
+            pr_err("permission Denied ssid :%d, osid %d mask :%d", ssid , osid , mask);
 
-     	if (rc!=0){
-         
-          	if( printk_ratelimit()) pr_info("Grant Access successfully");
-         
-           	return -EACCES;
-          }
-     
-   }
-    if(rc!=0)
-    {
-          
-          if(printk_ratelimit()) pr_info("Grant Access unsuccessfully");
-          return -EACCES;
-     
-      }
+            rc= -EACCES;
+         }// return -EACCES;
+    }
+
+ 
+  }	
+
+    if (rc==0 && printk_ratelimit()) pr_info("Grant Access successfully for the following path : %s",dir);
     
-     if(printk_ratelimit()) pr_info("Grant Access successfully for the following path : %s",dir);
+    else if(rc==-EACCES && printk_ratelimit()) pr_info("Grant Access successfully for the following path : %s",dir);
     
      kfree(buff);
 
      if(_dentry)
           dput(_dentry);
 
-      return 0;
+     if (rc==0) return 0;
+
+     else return -EACCES;
  }
 
 
