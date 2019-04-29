@@ -505,7 +505,6 @@ static int mp4_inode_permission(struct inode *inode, int mask)
             return -EACCES;  
       }
 
-     
      new_sec =cred->security;
 
      ssid=new_sec->mp4_flags;
@@ -539,7 +538,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
          return 0;  
      
      }
-/*     
+    
      dir= dentry_path_raw(_dentry, buff,len+1);
     
      if(printk_ratelimit())
@@ -557,13 +556,16 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 	  kfree(buff);
 	  if(_dentry)
 		dput(_dentry);
-	  return 0; //TODO: skip is granted or no access?
+	  return 0; 
 	 }
-*/
+
+/*
      struct  inode * inode_arr[255];
      int count=0;
      inode_arr[count++]=inode;
 //The relationship between inode and dentry 
+
+
      while(!IS_ROOT(_dentry)){
  // get parent of current dentry
           
@@ -581,6 +583,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
          
           _dentry=parent;
      }
+*/
 //skip path speed up in boot time
 /*
     if(mp4_should_skip_path(buff)==1){
@@ -595,7 +598,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
                     pr_err("Cannot skip the path ");
      }
 */
-    while(count>0){
+  /*  while(count>0){
      
     	 struct inode* _inode=inode_arr[--count];
 
@@ -617,9 +620,9 @@ static int mp4_inode_permission(struct inode *inode, int mask)
      
       }
     
-   //   if(printk_ratelimit()) pr_info("Grant Access successfully for the following path : %s",buff);
-     
-      kfree(buff);
+     if(printk_ratelimit()) pr_info("Grant Access successfully for the following path : %s",dir);
+     */
+     kfree(buff);
 
      if(_dentry)
           dput(_dentry);
