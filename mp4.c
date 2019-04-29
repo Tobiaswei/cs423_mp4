@@ -559,10 +559,9 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 	  return 0; 
 	 }
 
-/*
      struct  inode * inode_arr[255];
      int count=0;
-     inode_arr[count++]=inode;
+    // inode_arr[count++]=inode;
 //The relationship between inode and dentry 
 
 
@@ -579,11 +578,11 @@ static int mp4_inode_permission(struct inode *inode, int mask)
                  return 0;
               }
            
-          inode_arr[count++]= parent->d_inode;
+          inode_arr[count++]= _dentry->d_inode;
          
           _dentry=parent;
      }
-*/
+
 //skip path speed up in boot time
 /*
     if(mp4_should_skip_path(buff)==1){
@@ -598,11 +597,12 @@ static int mp4_inode_permission(struct inode *inode, int mask)
                     pr_err("Cannot skip the path ");
      }
 */
-  /*  while(count>0){
+    while(count>0){
      
     	 struct inode* _inode=inode_arr[--count];
 
-     	 rc=mp4_has_permission( ssid, _inode, mask);
+     	 //rc=mp4_has_permission( ssid, _inode, mask);
+         rc=0;
 
      	if (rc!=0){
          
@@ -621,7 +621,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
       }
     
      if(printk_ratelimit()) pr_info("Grant Access successfully for the following path : %s",dir);
-     */
+    
      kfree(buff);
 
      if(_dentry)
