@@ -369,7 +369,11 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
 {
      if(osid ==MP4_NO_ACCESS){
                
-            if(ssid == MP4_TARGET_SID) return -EACCES;
+            if(ssid == MP4_TARGET_SID){
+
+               pr_info("ssid : %d , osid : %d  mask :%d cannot access to inode",ssid,osid,mask);
+               return -EACCES;
+           }
 
             else return 0;       
        } 
@@ -418,7 +422,7 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
                 else return -EACCES;
        }
 
-       if(osid==MP4_RW_DIR  && ssid ==MP4_TARGET_SID){
+       if((osid==MP4_RW_DIR)  && (ssid ==MP4_TARGET_SID)){
                
                 return 0;
        }
@@ -554,7 +558,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 
     if (rc==0 && printk_ratelimit()) pr_info("Grant Access successfully for the following path : %s",dir);
     
-    else if(rc==-EACCES && printk_ratelimit()) pr_info("Grant Access successfully for the following path : %s",dir);
+    else if(rc==-EACCES && printk_ratelimit()) pr_info("Grant DENIED Access  for the following path : %s",dir);
     
      kfree(buff);
 
