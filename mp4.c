@@ -552,7 +552,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 
    osid= get_inode_sid(inode);
    
-   if(strncmp(dir,"/home/yuguang2",13)==0) pr_err("file 1 osid : %d and sid :%d",osid,ssid);
+//   if(strncmp(dir,"/home/yuguang2",13)==0) pr_err("file 1 osid : %d and sid :%d",osid,ssid);
  
    if(printk_ratelimit())
          pr_info("ssid : %d ,osid : %d, mask : %d ", ssid,osid,mask);
