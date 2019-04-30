@@ -392,7 +392,7 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
               
               if(ssid==MP4_TARGET_SID){
                   if((mask |  MAY_READ  | MAY_WRITE | MAY_APPEND)==(MAY_READ  | MAY_WRITE | MAY_APPEND)) return 0;
-                   else return {
+                   else  {
                          pr_info("ssid : %d , osid : %d  mask :%d cannot access to inode",ssid,osid,mask);
                          return -EACCES; 
                   }      
