@@ -98,13 +98,13 @@ static int get_inode_sid(struct inode *inode)
 	}
 
 	//first time get xattr and error handling
-	ret = inode->i_op->getxattr(dentry, XATTR_MP4_SUFFIX, cred_ctx, size);
+	ret = inode->i_op->getxattr(dentry, XATTR_NAME_MP4, cred_ctx, size);
 	size = ret;
-
+/*
 	if(ret == -ERANGE) {
 		//buffer overflows, should query the correct buffer size
 		kfree(cred_ctx);
-		ret = inode->i_op->getxattr(dentry, XATTR_MP4_SUFFIX, NULL, 0);
+		ret = inode->i_op->getxattr(dentry, XATTR_NAME_MP4, NULL, 0);
 		//queried size even < 0, error, terminate.
 		if(ret < 0) {
 			if(dentry)
@@ -121,9 +121,9 @@ static int get_inode_sid(struct inode *inode)
 			return -ENOMEM;
 		}
 		//second time get xattr and error handling
-		ret = inode->i_op->getxattr(dentry, XATTR_MP4_SUFFIX, cred_ctx, size);
+		ret = inode->i_op->getxattr(dentry, XATTR_NAME_MP4, cred_ctx, size);
 	}
-
+*/
 	if(dentry)
 		dput(dentry);
 
@@ -189,7 +189,7 @@ static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 
    if(sid==MP4_TARGET_SID){
       
-      // pr_err("set targt bolb security as MP4_TARGET_SID");
+       pr_err("set targt bolb security as MP4_TARGET_SID");
         
        tsec=bprm->cred->security;
 
