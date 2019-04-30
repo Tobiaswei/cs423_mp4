@@ -380,9 +380,12 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
           
        if(osid==MP4_READ_OBJ) {
 
-             if(mask==MAY_READ) return 0;
-            
-              else {
+             if(mask==MAY_READ){
+                     
+                 pr_info("ssid : %d , osid : %d  mask :%d   access to MP4_READ_ObJ  inode",ssid,osid,mask);
+                 return 0;
+             
+             }else {
                   pr_info("ssid : %d , osid : %d  mask :%d cannot access to inode",ssid,osid,mask);
                   return -EACCES;
            }
@@ -549,7 +552,11 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 
    osid= get_inode_sid(inode);
    
-   if(strcmp(dir,"/home/yuguang2/file1.txt")==0) pr_err("file 1 osid : %d and sid :%d",osid,ssid);
+   if(strncmp(dir,"/home/yuguang2",13)==0) pr_err("file 1 osid : %d and sid :%d",osid,ssid);
+ 
+   if(printk_raetelimit())
+         pr_info("ssid : %d ,osid : %d, mask : %d ", ssid,osid,mask);
+         
    if(ssid==MP4_TARGET_SID){
         
           if(mp4_has_permission(ssid,osid,mask)==0) rc=0;
