@@ -137,12 +137,10 @@ static int get_inode_sid(struct inode *inode)
 	}
 
 	if(printk_ratelimit()) {
-		pr_info("mp4: get node sid helper passed!");
+		pr_info("mp4: get node sid helper passed! sid :%d",sid);
 	}
 
 	return sid;
-
-
 
 }
 
@@ -339,8 +337,6 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
         return -EOPNOTSUPP;
       }   
    else {
-
-             
         if (value && len) {
 
                 char *s="read-write";
@@ -375,7 +371,11 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
                return -EACCES;
            }
 
-            else return 0;       
+            else{
+           
+               pr_info("ssid : %d , osid : %d  mask :%d Access to inode",ssid,osid,mask);
+                   return 0;
+                 }        
        } 
           
        if(osid==MP4_READ_OBJ) {
