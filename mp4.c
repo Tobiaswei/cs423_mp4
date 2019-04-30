@@ -556,19 +556,24 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 
  
   }	
+   kfree(buff);
 
-    if (rc==0 && printk_ratelimit()) pr_info("Grant Access successfully for the following path : %s",dir);
-    
-    else if(rc==-EACCES && printk_ratelimit()) pr_info("Grant DENIED Access  for the following path : %s",dir);
-    
-     kfree(buff);
-
-     if(_dentry)
+    if(_dentry)
           dput(_dentry);
 
-     if (rc==0) return 0;
 
-     else return -EACCES;
+    if (rc==0){
+               if( printk_ratelimit())
+                       pr_info("Grant Access successfully for the following path : %s",dir);
+               return 0;
+    } else {
+            if( printk_ratelimit())
+                       pr_info("Grant DENIED Access  for the following path : %s",dir);
+
+               return -EACCES;
+     }
+    
+    
  }
 
 
