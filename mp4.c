@@ -373,7 +373,7 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
 
             else{
            
-               pr_info("ssid : %d , osid : %d  mask :%d Access to inode",ssid,osid,mask);
+             // if(printk_ratelimit()) pr_info("ssid : %d , osid : %d  mask :%d Access to inode",ssid,osid,mask);
                    return 0;
                  }        
        } 
