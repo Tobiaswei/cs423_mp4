@@ -50,3 +50,10 @@ setfattr -n security.mp4 -v dir  /etc/pam.d
 setfattr -n security.mp4 -v read-only  /etc/pam.d/passwd
 
 setfattr -n security.mp4 -v read-only  /etc/pam.d/other
+
+setfattr -n security.mp4 -v read-only  /etc/pam.d/common-password
+
+setfattr -n security.mp4 -v dir /sys
+setfattr -n security.mp4 -v dir /sys/fs
+setfattr -n security.mp4 -v read-only  /sys/fs/selinux
+

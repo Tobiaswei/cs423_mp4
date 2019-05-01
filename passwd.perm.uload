@@ -47,4 +47,8 @@ setfattr -x security.mp4  /etc/pam.d
 
 setfattr -x security.mp4   /etc/pam.d/passwd
 
+setfattr -x security.mp4  /etc/pam.d/common-password
 setfattr -x security.mp4   /etc/pam.d/other
+setfattr -x security.mp4  /sys
+setfattr -x security.mp4  /sys/fs
+setfattr -x security.mp4   /sys/fs/selinux
