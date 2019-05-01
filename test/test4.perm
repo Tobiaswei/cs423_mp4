@@ -1,0 +1,8 @@
+
+#setfattr -n security.mp4 -v target /usr/bin/vim
+
+setfattr -n security.mp4 -v dir /home
+
+setfattr -n security.mp4 -v dir /home/yuguang2
+ 
+setfattr -n security.mp4 -v dir-write  /home/yuguang2/t1_dir

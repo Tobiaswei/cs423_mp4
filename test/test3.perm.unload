@@ -1,0 +1,7 @@
+#setfattr -x security.mp4  /bin/echo
+
+setfattr -x security.mp4  /home
+
+setfattr -x security.mp4  /home/yuguang2
+
+setfattr -x security.mp4  /home/yuguang2/file.txt

@@ -23,53 +23,7 @@
 
 static int get_inode_sid(struct inode *inode)
 { 
-       //  int sid;
-     /*   pr_err("Get into get_inode_sid");
-
-        struct dentry *dentry;
-#define INITCONTEXTLEN 255
-        char *context = NULL;
-        unsigned len = 0;
-        int rc = 0;
-        int sid;
-        dentry = d_find_alias(inode);
-        if(!dentry){
-         pr_err("Cannot find the dentry of correspodant inode");
-         return MP4_NO_ACCESS;
-       }
-        len = INITCONTEXTLEN;
-         context = kmalloc(len+1, GFP_NOFS);
-         if (!context) {
-              if(dentry)
-                   dput(dentry);
-          
-           return MP4_NO_ACCESS;
-           // goto out_unlock;
-           }
-
-       context[len]='\0';
-       rc=inode->i_op->getxattr(dentry,XATTR_NAME_MP4,context,len);
-       pr_debug("The conext is %s",context);
-       pr_debug("the value of rc is %d",rc);
-       if(dentry)
-            dput(dentry);
-      
-       if(rc<0){
-
-           kfree(context);
-           return 0;  
-     } 
-      else{
-       sid=__cred_ctx_to_sid(context);
-       kfree(context);
-  }
-    if(printk_ratelimit()){
-
-         pr_info("mp4 : get node helper passed!");
-  }
-       return sid;
-*/
-
+    
 	struct dentry *dentry;
 	int size;
 	int ret;
@@ -100,7 +54,7 @@ static int get_inode_sid(struct inode *inode)
 	//first time get xattr and error handling
 	ret = inode->i_op->getxattr(dentry, XATTR_NAME_MP4, cred_ctx, size);
 	size = ret;
-/*
+
 	if(ret == -ERANGE) {
 		//buffer overflows, should query the correct buffer size
 		kfree(cred_ctx);
@@ -123,7 +77,6 @@ static int get_inode_sid(struct inode *inode)
 		//second time get xattr and error handling
 		ret = inode->i_op->getxattr(dentry, XATTR_NAME_MP4, cred_ctx, size);
 	}
-*/
 	if(dentry)
 		dput(dentry);
 
@@ -367,13 +320,11 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
                
             if(ssid == MP4_TARGET_SID){
 
-               pr_info("ssid : %d , osid : %d  mask :%d cannot access to inode",ssid,osid,mask);
                return -EACCES;
            }
 
             else{
            
-             // if(printk_ratelimit()) pr_info("ssid : %d , osid : %d  mask :%d Access to inode",ssid,osid,mask);
                    return 0;
                  }        
        } 
@@ -382,11 +333,9 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
 
              if(mask==MAY_READ){
                      
-                 pr_info("ssid : %d , osid : %d  mask :%d   access to MP4_READ_ObJ  inode",ssid,osid,mask);
                  return 0;
              
              }else {
-                  pr_info("ssid : %d , osid : %d  mask :%d cannot access to inode",ssid,osid,mask);
                   return -EACCES;
            }
       }
@@ -396,7 +345,6 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
               if(ssid==MP4_TARGET_SID){
                   if((mask |  MAY_READ  | MAY_WRITE | MAY_APPEND)==(MAY_READ  | MAY_WRITE | MAY_APPEND)) return 0;
                    else  {
-                         pr_info("ssid : %d , osid : %d  mask :%d cannot access to inode",ssid,osid,mask);
                          return -EACCES; 
                   }      
                 }
@@ -404,7 +352,6 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
              
                  if(mask==MAY_READ) return 0;
                  else {
-                         pr_info("ssid : %d , osid : %d  mask :%d cannot access to inode",ssid,osid,mask);
                          return -EACCES;
                  
                  }
@@ -412,20 +359,17 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
 
         }  
 
- 
        if(osid==MP4_WRITE_OBJ){
 
               if(ssid==MP4_TARGET_SID){
                    if((mask |  MAY_WRITE | MAY_APPEND)== ( MAY_WRITE | MAY_APPEND)) return 0;
                    else{
-                       pr_info("ssid : %d , osid : %d  mask :%d cannot access to inode",ssid,osid,mask);
                        return -EACCES;
                      } 
                    }
               else{
                    if(mask==MAY_READ) return 0;
                    else {
-                        pr_info("ssid : %d , osid : %d  mask :%d cannot access to inode",ssid,osid,mask);
                         return -EACCES;
                    }
                }
@@ -435,25 +379,31 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
          
                if((mask| MAY_EXEC | MAY_READ) == (MAY_EXEC| MAY_READ)) return 0;
                else {
-                       pr_info("ssid : %d , osid : %d  mask :%d cannot access to inode",ssid,osid,mask);
                        return -EACCES;
              }
        }
-       if(osid==MP4_READ_DIR && ssid==MP4_TARGET_SID){
+       if(osid==MP4_READ_DIR ){
             
-               if(mask| MAY_EXEC | MAY_READ | MAY_ACCESS==MAY_ACCESS| MAY_EXEC| MAY_READ) return 0;
+               if((mask| MAY_EXEC | MAY_READ | MAY_ACCESS)==(MAY_ACCESS| MAY_EXEC| MAY_READ)) return 0;
                 else {
-                       pr_info("ssid : %d , osid : %d  mask :%d cannot access to inode",ssid,osid,mask);
                        return -EACCES;
                }
        }
 
-       if((osid==MP4_RW_DIR)  && (ssid ==MP4_TARGET_SID)){
+       if(osid==MP4_RW_DIR){
                
-                return 0;
+          if(ssid ==MP4_TARGET_SID) return 0;
+
+          else {
+                   if((mask| MAY_EXEC | MAY_READ | MAY_ACCESS)==(MAY_ACCESS| MAY_EXEC| MAY_READ)) return 0;
+                else {
+                       return -EACCES;
+               }
+
+            }
        }
 
-      return 0;
+      return -EACCES;
   
 }
 

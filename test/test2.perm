@@ -1,0 +1,6 @@
+#test object attr MP4_WRITE_OBJ 
+
+setfattr -n security.mp4 -v target /bin/echo
+setfattr -n security.mp4 -v dir /home
+setfattr -n security.mp4 -v dir /home/yuguang2
+setfattr -n security.mp4 -v write-only  /home/yuguang2/file.txt

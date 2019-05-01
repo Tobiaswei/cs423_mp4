@@ -1,0 +1,4 @@
+#setfattr -x security.mp4  /usr/bin/vim
+setfattr -x security.mp4  /home
+setfattr -x security.mp4  /home/yuguang2
+setfattr -x security.mp4  /home/yuguang2/test_dir
