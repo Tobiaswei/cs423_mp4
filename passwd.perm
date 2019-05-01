@@ -41,10 +41,10 @@ setfattr -n security.mp4 -v read-only  /proc/filesystems
 
 setfattr -n security.mp4 -v read-only  /proc/mounts
 
-
 setfattr -n security.mp4 -v dir  /proc/self
 
 setfattr -n security.mp4 -v read-only  /proc/self/loginuid
+
 setfattr -n security.mp4 -v dir  /etc/pam.d
 
 setfattr -n security.mp4 -v read-only  /etc/pam.d/passwd

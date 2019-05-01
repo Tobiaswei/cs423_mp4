@@ -27,7 +27,7 @@ setfattr -x security.mp4   /etc/passwd
 setfattr -x security.mp4   /var/run
 setfattr -x security.mp4   /var/run/utmp
 
-etfattr -x security.mp4   /usr
+setfattr -x security.mp4   /usr
 setfattr -x security.mp4    /usr/share
 setfattr -x security.mp4   /usr/share/locale
 
