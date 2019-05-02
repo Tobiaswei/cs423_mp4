@@ -288,7 +288,7 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 
  char * value_ptr;
 
- if(task_sid == MP4_TARGET_SID) {
+ if(tsec->mp4_flags == MP4_TARGET_SID) {
 		//if inode is a directory, set xattr to "dir-write", else set to "read-write"
      if(S_ISDIR(inode->i_mode)) {
 	value_ptr = kstrdup("dir-write", GFP_KERNEL);
