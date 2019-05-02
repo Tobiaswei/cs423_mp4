@@ -19,36 +19,19 @@ setfattr -x security.mp4  /var/cache/cracklib/cracklib_dict.pwd
 setfattr -x security.mp4  /var/cache/cracklib/cracklib_dict.pwi
 
 setfattr -x security.mp4  /var/cache/cracklib/cracklib_dict.hwm
-setfattr -x security.mp4    /etc
-setfattr -x security.mp4   /etc/ld.so.cache
-setfattr -x security.mp4   /etc/nsswitch.conf
-setfattr -x security.mp4   /etc/passwd
+setfattr -x security.mp4  /etc
+setfattr -x security.mp4  /etc/ld.so.cache
+setfattr -x security.mp4  /etc/nsswitch.conf
+setfattr -x security.mp4  /etc/passwd
 
-setfattr -x security.mp4    /etc/login.defs
-setfattr -x security.mp4    /etc/.pwd.lock
-setfattr -x security.mp4    /etc/shadow
-setfattr -x security.mp4    /etc/nshadow
-setfattr -x security.mp4    /etc/localtime
-setfattr  -x  security.mp4   /etc/ldap.conf
+setfattr -x security.mp4   /etc/login.defs
+setfattr -x security.mp4   /etc/.pwd.lock
+setfattr -x security.mp4   /etc/shadow
+setfattr -x security.mp4   /etc/localtime
+setfattr -x security.mp4   /etc/ldap.conf
 setfattr -x security.mp4   /var/run
 setfattr -x security.mp4   /var/run/utmp
 
-setfattr -x security.mp4   /usr
-setfattr -x security.mp4    /usr/share
-setfattr -x security.mp4   /usr/share/locale
-
-setfattr -x security.mp4    /usr/share/locale/locale.alias
-
-setfattr -x security.mp4   /proc
-
-setfattr -x security.mp4   /proc/filesystems
-
-setfattr -x security.mp4   /proc/mounts
-
-
-setfattr -x security.mp4   /proc/self
-
-setfattr -x security.mp4   /proc/self/loginuid
 setfattr -x security.mp4   /etc/pam.d
 
 setfattr -x security.mp4   /etc/pam.d/passwd
@@ -59,12 +42,9 @@ setfattr -x security.mp4   /etc/pam.d/other
 setfattr -x security.mp4   /etc/pam.d/common-auth
 setfattr -x  security.mp4  /etc/pam.d/common-account
 
-setfattr -x security.mp4   /etc/pam.d/common-session
 
 setfattr -x security.mp4    /etc/krb5.conf
 setfattr  -x security.mp4    /etc/security
 
 setfattr -x security.mp4   /etc/security/pwquality.conf
 
-setfattr -x security.mp4   /dev
-setfattr -x security.mp4  /dev/urandom
