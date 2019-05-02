@@ -286,20 +286,36 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 
       else return -ENOMEM; 
 
-    if(tsec->mp4_flags!=MP4_TARGET_SID){
-        return -EOPNOTSUPP;
-      }   
-   else {
-      
+ char * value_ptr;
 
-          char *s="read-write";
-          size_t clen=strlen(s);
+ if(task_sid == MP4_TARGET_SID) {
+		//if inode is a directory, set xattr to "dir-write", else set to "read-write"
+     if(S_ISDIR(inode->i_mode)) {
+	value_ptr = kstrdup("dir-write", GFP_KERNEL);
+			//error handling
+	if (!value_ptr) {
+	      return -ENOMEM;
+	}
+	*value = value_ptr;
 
-          *value = s;
-          *len = clen;
-        
-        //else return -ENOMEM;
-    }
+			//put length
+	*len = 10;
+	} else {
+			//put value
+	   value_ptr = kstrdup("read-write", GFP_KERNEL);
+			//error handling
+	if (!value_ptr) {
+			return -ENOMEM;
+			}
+		*value = value_ptr;
+
+			//put length
+		*len = 11;
+		}
+
+	} else {
+		return -EOPNOTSUPP;
+	} 
 
 	return 0;
 }
