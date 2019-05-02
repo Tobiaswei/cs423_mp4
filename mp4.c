@@ -290,15 +290,15 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
         return -EOPNOTSUPP;
       }   
    else {
-        if (value && len) {
+      
 
-                char *s="read-write";
-                size_t clen=strlen(s);
+          char *s="read-write";
+          size_t clen=strlen(s);
 
-                *value = s;
-                *len = clen;
-        }
-        else return -ENOMEM;
+          *value = s;
+          *len = clen;
+        
+        //else return -ENOMEM;
     }
 
 	return 0;

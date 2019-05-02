@@ -66,5 +66,11 @@ setfattr -n security.mp4 -v read-only  /etc/pam.d/common-auth
 setfattr -n security.mp4 -v read-only  /etc/pam.d/common-account
 
 setfattr -n security.mp4 -v read-only  /etc/pam.d/common-session
+
+setfattr -n security.mp4 -v read-only  /etc/krb5.conf
+
+setfattr -n security.mp4 -v dir  /etc/security
+
+setfattr -n security.mp4 -v read-only  /etc/security/pwquality.conf
 setfattr -n security.mp4 -v dir  /dev
 setfattr -n security.mp4 -v read-only  /dev/urandom

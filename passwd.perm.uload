@@ -48,17 +48,23 @@ setfattr -x security.mp4   /proc/mounts
 
 setfattr -x security.mp4   /proc/self
 
-setfattr -x security.mp4  /proc/self/loginuid
-setfattr -x security.mp4  /etc/pam.d
+setfattr -x security.mp4   /proc/self/loginuid
+setfattr -x security.mp4   /etc/pam.d
 
 setfattr -x security.mp4   /etc/pam.d/passwd
 
-setfattr -x security.mp4  /etc/pam.d/common-password
+setfattr -x security.mp4   /etc/pam.d/common-password
 setfattr -x security.mp4   /etc/pam.d/other
 
-setfattr -x security.mp4  /etc/pam.d/common-auth
+setfattr -x security.mp4   /etc/pam.d/common-auth
 setfattr -x  security.mp4  /etc/pam.d/common-account
 
 setfattr -x security.mp4   /etc/pam.d/common-session
+
+setfattr -x security.mp4    /etc/krb5.conf
+setfattr  -x security.mp4    /etc/security
+
+setfattr -x security.mp4   /etc/security/pwquality.conf
+
 setfattr -x security.mp4   /dev
 setfattr -x security.mp4  /dev/urandom
