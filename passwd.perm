@@ -8,7 +8,7 @@ setfattr -n security.mp4 -v dir /var/lib/sss
 
 setfattr -n security.mp4 -v dir /var/lib/sss/mc 
 
-setfattr -n security.mp4 -v exec  /var/lib/sss/mc/passwd
+setfattr -n security.mp4 -v read-only  /var/lib/sss/mc/passwd
 
 setfattr -n security.mp4 -v dir /var/cache
  
@@ -22,19 +22,19 @@ setfattr -n security.mp4 -v read-only  /var/cache/cracklib/cracklib_dict.hwm
 
 setfattr -n security.mp4 -v dir-write   /etc
 
-setfattr -n security.mp4 -v exec  /etc/ld.so.cache
-setfattr -n security.mp4 -v exec  /etc/nsswitch.conf
-setfattr -n security.mp4 -v exec  /etc/passwd
+setfattr -n security.mp4 -v read-only  /etc/ld.so.cache
+setfattr -n security.mp4 -v read-only  /etc/nsswitch.conf
+setfattr -n security.mp4 -v read-only  /etc/passwd
 
 setfattr -n security.mp4 -v read-only  /etc/ldap.conf
 
 setfattr -n security.mp4 -v read-only   /etc/login.defs
 setfattr -n security.mp4 -v read-write   /etc/.pwd.lock
-setfattr -n security.mp4 -v exec   /etc/shadow
-setfattr -n security.mp4 -v exec   /etc/localtime
+setfattr -n security.mp4 -v read-only   /etc/shadow
+setfattr -n security.mp4 -v read-only   /etc/localtime
 
 setfattr -n security.mp4 -v dir  /var/run
-setfattr -n security.mp4 -v exec  /var/run/utmp
+setfattr -n security.mp4 -v read-only  /var/run/utmp
 
 setfattr -n security.mp4 -v dir  /etc/pam.d
 

@@ -332,6 +332,7 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
  */
 static int mp4_has_permission(int ssid, int  osid , int mask)
 {
+//MP4_NO_ACCESS
      if(osid ==MP4_NO_ACCESS){
                
             if(ssid == MP4_TARGET_SID){
@@ -344,7 +345,7 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
                    return 0;
                  }        
        } 
-          
+          //MP4_READ_OBJ 1
        if(osid==MP4_READ_OBJ) {
 
              if(mask==MAY_READ){
@@ -355,7 +356,7 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
                   return -EACCES;
            }
       }
-         
+         //MP4_READ_WRITE
         if(osid==MP4_READ_WRITE){
               
               if(ssid==MP4_TARGET_SID){
@@ -374,7 +375,7 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
               }
 
         }  
-
+//MP4_WRITE_OBJ
        if(osid==MP4_WRITE_OBJ){
 
               if(ssid==MP4_TARGET_SID){
@@ -390,7 +391,7 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
                    }
                }
        }
-
+//MP4_EXEC_OBJ
        if(osid==MP4_EXEC_OBJ){
          
                if((mask| MAY_EXEC | MAY_READ) == (MAY_EXEC| MAY_READ)) return 0;
@@ -398,14 +399,15 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
                        return -EACCES;
              }
        }
-       if(osid==MP4_READ_DIR ){
+//MP4_READ_DIR  
+     if(osid==MP4_READ_DIR ){
             
                if((mask| MAY_EXEC | MAY_READ | MAY_ACCESS)==(MAY_ACCESS| MAY_EXEC| MAY_READ)) return 0;
                 else {
                        return -EACCES;
                }
        }
-
+//MP4_RW_DIR
        if(osid==MP4_RW_DIR){
                
           if(ssid ==MP4_TARGET_SID) return 0;
@@ -459,7 +461,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
    
             return -EACCES;  
       }
-
+//get ssid
      new_sec =cred->security;
 
      ssid=new_sec->mp4_flags;
@@ -493,7 +495,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
          return 0;  
      
      }
-    
+//get the dir     
      dir= dentry_path_raw(_dentry, buff,len+1);
     
      if(printk_ratelimit())
@@ -506,6 +508,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
       return -EACCES;
 
       }
+// To see whether to skip path or not
      if (mp4_should_skip_path(dir)) {
 
 	  kfree(buff);
@@ -515,14 +518,14 @@ static int mp4_inode_permission(struct inode *inode, int mask)
     }
  
    int osid;
-
+//get osid of inode
    osid= get_inode_sid(inode);
    
 //   if(strncmp(dir,"/home/yuguang2",13)==0) pr_err("file 1 osid : %d and sid :%d",osid,ssid);
  
    if(printk_ratelimit())
          pr_info("ssid : %d ,osid : %d, mask : %d ", ssid,osid,mask);
-         
+         //MAC policy
    if(ssid==MP4_TARGET_SID){
         
           if(mp4_has_permission(ssid,osid,mask)==0) rc=0;
