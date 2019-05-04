@@ -41,7 +41,7 @@ setfattr -x security.mp4   /etc/pam.d/other
 
 setfattr -x security.mp4   /etc/pam.d/common-auth
 setfattr -x  security.mp4  /etc/pam.d/common-account
-
+setfattr -x security.mp4 /etc/pam.d/common-session
 
 setfattr -x security.mp4    /etc/krb5.conf
 setfattr  -x security.mp4    /etc/security

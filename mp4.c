@@ -333,7 +333,7 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 static int mp4_has_permission(int ssid, int  osid , int mask)
 {
 
-  if((mask |MAY_READ | MAY_ACCESS | MAY_EXEC)==0) return 0;
+  if((mask & MAY_READ & MAY_ACCESS &  MAY_EXEC)==0) return 0;
 
 
 //MP4_NO_ACCESS
@@ -554,7 +554,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
       
          else{
 
-            pr_err("permission Denied ssid :%d, osid %d mask :%d", ssid , osid , mask);
+            pr_err("%s permission Denied ssid :%d, osid %d mask :%d",dir, ssid , osid , mask);
 
             rc= -EACCES;
          }// return -EACCES;

@@ -20,7 +20,7 @@ setfattr -n security.mp4 -v read-only  /var/cache/cracklib/cracklib_dict.pwi
 
 setfattr -n security.mp4 -v read-only  /var/cache/cracklib/cracklib_dict.hwm
 
-setfattr -n security.mp4 -v dir-write   /etc
+setfattr -n security.mp4 -v dir   /etc
 
 setfattr -n security.mp4 -v read-only  /etc/ld.so.cache
 setfattr -n security.mp4 -v read-only  /etc/nsswitch.conf
@@ -48,6 +48,7 @@ setfattr -n security.mp4 -v read-only  /etc/pam.d/common-auth
 
 setfattr -n security.mp4 -v read-only  /etc/pam.d/common-account
 
+setfattr -n security.mp4 -v read-only  /etc/pam.d/common-session
 setfattr -n security.mp4 -v read-only  /etc/krb5.conf
 
 setfattr -n security.mp4 -v dir  /etc/security
