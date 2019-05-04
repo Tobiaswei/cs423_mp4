@@ -333,7 +333,7 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 static int mp4_has_permission(int ssid, int  osid , int mask)
 {
 
-  if((mask & MAY_READ & MAY_ACCESS &  MAY_EXEC)==0) return 0;
+  if((mask &  MAY_READ==0) &&  (mask & MAY_ACCESS )==0 &&(mask & MAY_EXEC)==0) return 0;
 
 
 //MP4_NO_ACCESS
