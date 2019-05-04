@@ -281,7 +281,7 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
     struct mp4_security* tsec=current_security();
     if (name){
 
-                *name = XATTR_NAME_MP4;
+                *name = XATTR_MP4_SUFFIX;
         }
 
       else return -ENOMEM; 
@@ -332,6 +332,10 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
  */
 static int mp4_has_permission(int ssid, int  osid , int mask)
 {
+
+  if((mask |MAY_READ | MAY_ACCESS | MAY_EXEC)==0) return 0;
+
+
 //MP4_NO_ACCESS
      if(osid ==MP4_NO_ACCESS){
                
@@ -410,9 +414,12 @@ static int mp4_has_permission(int ssid, int  osid , int mask)
 //MP4_RW_DIR
        if(osid==MP4_RW_DIR){
                
-          if(ssid ==MP4_TARGET_SID) return 0;
-
-          else {
+          if(ssid ==MP4_TARGET_SID) {
+                
+                   if((mask | MAY_ACCESS |MAY_READ)== (MAY_READ |MAY_ACCESS))
+                      return 0;
+             
+               }else {
                    if((mask| MAY_EXEC | MAY_READ | MAY_ACCESS)==(MAY_ACCESS| MAY_EXEC| MAY_READ)) return 0;
                 else {
                        return -EACCES;
